@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   
+  <!-- Firebase App & Database SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <style>
     :root {
       --bg-color: #faf9f5;
@@ -97,9 +101,7 @@
       width: 100%; background: var(--btn-green); color: #fff; border: none;
       padding: 12px; border-radius: 6px; font-size: 15px; font-weight: 600; margin-top: 15px; cursor: pointer;
     }
-    .submit-btn:disabled {
-      background: #ccc; cursor: not-allowed;
-    }
+    .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
 
     .already-submitted-notice {
       background: #fff3cd; color: #856404; border: 1px solid #ffeeba;
@@ -109,14 +111,12 @@
 
     .admin-footer-link { text-align: center; margin-top: 35px; font-size: 12px; color: var(--muted-text); cursor: pointer; text-decoration: underline; }
 
-    /* Modal Overlay Common */
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
       justify-content: center; align-items: center; z-index: 1000;
     }
 
-    /* Admin Password Auth Modal */
     .auth-card {
       background: #fff; padding: 32px 28px; border-radius: 6px; width: 90%; max-width: 380px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.12); position: relative; border: 1px solid var(--border-color);
@@ -127,17 +127,13 @@
     .auth-input {
       width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 4px;
       font-size: 14px; font-family: inherit; outline: none; margin-bottom: 15px; background: var(--bg-color);
-      transition: border-color 0.2s;
     }
-    .auth-input:focus { border-color: var(--text-dark); background: #fff; }
     .auth-btn {
       width: auto; padding: 12px 20px; background: var(--btn-green); color: #fff; border: none;
-      border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+      border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
     }
-    .auth-btn:hover { opacity: 0.9; }
     .auth-error { color: #d32f2f; font-size: 12px; margin-bottom: 12px; display: none; }
 
-    /* Admin Overlay Dashboard */
     .admin-card {
       background: #faf9f5; padding: 30px 24px; border-radius: 4px; width: 92%; max-width: 440px;
       max-height: 90vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.15); position: relative;
@@ -148,75 +144,41 @@
     .admin-sub { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--accent-orange); text-transform: uppercase; font-family: 'Space Mono', monospace; }
     .admin-title { font-family: 'DM Serif Display', serif; font-size: 34px; margin-top: 5px; margin-bottom: 25px; line-height: 1.1; color: var(--text-dark); }
 
-    /* Section Headings */
     .sec-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
     .sec-title { font-family: 'DM Serif Display', serif; font-size: 20px; }
     .sec-sub { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--muted-text); text-transform: uppercase; font-family: 'Space Mono', monospace; }
 
-    /* Filter Toggle Tabs */
     .tab-toggle { display: flex; gap: 4px; background: #e5e3da; padding: 3px; border-radius: 4px; margin-bottom: 8px; }
     .tab-btn {
       flex: 1; border: none; background: transparent; padding: 6px 0; font-size: 10px;
       font-weight: 700; font-family: 'Space Mono', monospace; text-transform: uppercase;
-      color: var(--muted-text); cursor: pointer; border-radius: 3px; transition: all 0.2s ease;
+      color: var(--muted-text); cursor: pointer; border-radius: 3px;
     }
     .tab-btn.active { background: #fff; color: var(--text-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    /* Meal Selection Sub-Tabs */
     .meal-tab-toggle { display: flex; gap: 4px; background: #eeebd9; padding: 3px; border-radius: 4px; margin-bottom: 15px; }
     .meal-tab-btn {
       flex: 1; border: none; background: transparent; padding: 5px 0; font-size: 9.5px;
       font-weight: 700; font-family: 'Space Mono', monospace; text-transform: uppercase;
-      color: var(--muted-text); cursor: pointer; border-radius: 3px; transition: all 0.2s ease;
+      color: var(--muted-text); cursor: pointer; border-radius: 3px;
     }
     .meal-tab-btn.active { background: var(--accent-orange); color: #fff; }
 
-    /* Main Meal Ratings Container */
-    .meal-ratings-box {
-      background: #fff;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 25px;
-    }
-
+    .meal-ratings-box { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 25px; }
     .meal-rating-group { margin-bottom: 16px; }
     .meal-rating-group:last-child { margin-bottom: 0; }
-
-    .meal-group-title {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--accent-orange);
-      font-family: 'Space Mono', monospace;
-      text-transform: uppercase;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #f0eee6;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
+    .meal-group-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--accent-orange); font-family: 'Space Mono', monospace; text-transform: uppercase; padding-bottom: 4px; border-bottom: 1px solid #f0eee6; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
     .item-rating-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed #f0eee6; }
     .item-rating-row:last-child { border-bottom: none; }
     .item-rating-val { color: var(--accent-orange); font-weight: 700; font-family: 'Space Mono', monospace; }
     .rating-count { color: var(--muted-text); font-weight: 400; font-size: 11px; }
 
-    /* Comments Section */
     .comment-row { padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 12px; display: flex; gap: 8px; align-items: center; }
     .comment-tag { font-size: 10px; font-weight: 700; color: var(--accent-orange); font-family: 'Space Mono', monospace; min-width: 65px; }
     .comment-text { font-family: 'Space Mono', monospace; color: #444; }
 
-    /* Menu Control Styles */
     .day-selector { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-top: 12px; margin-bottom: 15px; scrollbar-width: none; }
-    .day-selector::-webkit-scrollbar { display: none; }
-    .day-pill {
-      background: #f0eee6; border: 1px solid var(--border-color); padding: 6px 12px;
-      border-radius: 20px; font-size: 11px; font-family: 'Space Mono', monospace;
-      font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--muted-text);
-      transition: all 0.2s ease;
-    }
+    .day-pill { background: #f0eee6; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-family: 'Space Mono', monospace; font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--muted-text); }
     .day-pill.active { background: var(--text-dark); color: #fff; border-color: var(--text-dark); }
 
     .menu-edit-container { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
@@ -224,27 +186,11 @@
     .meal-card-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
     .meal-icon { font-size: 14px; }
     .meal-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent-orange); font-family: 'Space Mono', monospace; text-transform: uppercase; }
-    .menu-input {
-      width: 100%; padding: 8px 10px; border: 1px solid #f0eee6; border-radius: 4px;
-      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; background: var(--bg-color); color: var(--text-dark);
-      outline: none; transition: border-color 0.2s;
-    }
-    .menu-input:focus { border-color: var(--accent-orange); background: #fff; }
+    .menu-input { width: 100%; padding: 8px 10px; border: 1px solid #f0eee6; border-radius: 4px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; background: var(--bg-color); color: var(--text-dark); outline: none; }
     
-    .save-menu-btn {
-      width: 100%; background: var(--text-dark); color: #fff; border: none; padding: 12px;
-      border-radius: 6px; font-size: 13px; font-weight: 700; font-family: 'Space Mono', monospace;
-      letter-spacing: 1px; text-transform: uppercase; margin-top: 10px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s;
-    }
-    .save-menu-btn:hover { opacity: 0.9; }
-
-    /* Admin Unlocked Toast */
-    .toast-admin {
-      position: fixed; bottom: 15px; right: 15px; background: #11281a; color: #fff;
-      padding: 10px 16px; border-radius: 4px; font-size: 12px; display: flex;
-      align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001;
-    }
+    .save-menu-btn { width: 100%; background: var(--text-dark); color: #fff; border: none; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 700; font-family: 'Space Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-top: 10px; cursor: pointer; }
+    
+    .toast-admin { position: fixed; bottom: 15px; right: 15px; background: #11281a; color: #fff; padding: 10px 16px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; }
     .toast-close { cursor: pointer; font-size: 14px; opacity: 0.7; }
   </style>
 </head>
@@ -268,7 +214,6 @@
 
     <div class="divider"></div>
 
-    <!-- Off-time Screen -->
     <div id="off-time-view">
       <div class="between-services">
         <div class="large-icon">🕒</div>
@@ -285,13 +230,12 @@
       </div>
     </div>
 
-    <!-- Active Rating Screen -->
     <div id="active-time-view" style="display: none;">
       <div class="active-meal-card">
         <h2 style="font-family: 'DM Serif Display', serif; margin-bottom: 15px;" id="active-meal-title">--</h2>
         
         <div id="already-submitted-msg" class="already-submitted-notice" style="display: none;">
-          ✓ Aapne is meal (Breakfast/Lunch/Dinner) ke liye aaj ka feedback de diya hai. Thank you!
+          ✓ Aapne is meal ke liye aaj ka feedback de diya hai. Thank you!
         </div>
 
         <form id="review-form">
@@ -310,13 +254,12 @@
     <div class="admin-footer-link" onclick="openAdminAuthModal()">Admin Dashboard & Feed</div>
   </div>
 
-  <!-- Custom Admin Access/PIN Modal -->
   <div class="modal-overlay" id="auth-modal">
     <div class="auth-card">
       <span class="admin-close" onclick="closeAdminAuthModal()">&times;</span>
       <div class="auth-sub">STAFF ACCESS</div>
       <h2 class="auth-title">Admin panel</h2>
-      <p class="auth-desc">Enter the mess manager PIN to update today's menus.</p>
+      <p class="auth-desc">Enter the mess manager PIN to view insights.</p>
       
       <div class="auth-error" id="auth-error-msg">Incorrect PIN. Please try again.</div>
       
@@ -325,7 +268,6 @@
     </div>
   </div>
 
-  <!-- Admin Panel Dashboard Overlay -->
   <div class="modal-overlay" id="admin-modal">
     <div class="admin-card">
       <span class="admin-close" onclick="closeAdminModal()">&times;</span>
@@ -333,45 +275,36 @@
       <div class="admin-sub">MESS INSIGHTS</div>
       <h2 class="admin-title">Today's control room</h2>
 
-      <!-- Item Ratings Section Header & Time Tabs -->
       <div class="sec-head">
         <span class="sec-title">Item ratings</span>
         <span class="sec-sub" id="item-rating-subtitle">PAST 24 HOURS</span>
       </div>
 
-      <!-- Time Tabs (Daily / Weekly / Monthly) -->
       <div class="tab-toggle">
         <button class="tab-btn active" id="btn-item-daily" onclick="switchItemRatingTab('daily')">Daily</button>
         <button class="tab-btn" id="btn-item-weekly" onclick="switchItemRatingTab('weekly')">Weekly</button>
         <button class="tab-btn" id="btn-item-monthly" onclick="switchItemRatingTab('monthly')">Monthly</button>
       </div>
 
-      <!-- Meal Filter Tabs (Breakfast / Lunch / Dinner) -->
       <div class="meal-tab-toggle">
         <button class="meal-tab-btn active" id="btn-meal-bf" onclick="switchMealFilter('Breakfast')">Breakfast</button>
         <button class="meal-tab-btn" id="btn-meal-lunch" onclick="switchMealFilter('Lunch')">Lunch</button>
         <button class="meal-tab-btn" id="btn-meal-dinner" onclick="switchMealFilter('Dinner')">Dinner</button>
       </div>
 
-      <!-- Main Meal-wise Ratings Outer Box -->
-      <div class="meal-ratings-box" id="admin-item-ratings">
-        <!-- Dynamic Meal-Wise Item Ratings Render Here -->
-      </div>
+      <div class="meal-ratings-box" id="admin-item-ratings"></div>
 
-      <!-- Recent Comments -->
       <div class="sec-head">
         <span class="sec-title">Recent comments</span>
         <span class="sec-sub" id="comments-count-lbl">0</span>
       </div>
       <div id="admin-recent-comments" style="margin-bottom: 20px;"></div>
 
-      <!-- Menu Control Section -->
       <div class="sec-head" style="margin-top: 30px;">
         <span class="sec-title">Menu control</span>
         <span class="sec-sub">WEEKLY SCHEDULE</span>
       </div>
 
-      <!-- Day Selector Pills -->
       <div class="day-selector" id="day-selector-container">
         <div class="day-pill" onclick="selectAdminDay('Sunday')">SUN</div>
         <div class="day-pill" onclick="selectAdminDay('Monday')">MON</div>
@@ -382,7 +315,6 @@
         <div class="day-pill" onclick="selectAdminDay('Saturday')">SAT</div>
       </div>
 
-      <!-- Meal Cards Inputs -->
       <div class="menu-edit-container">
         <div class="meal-edit-card">
           <div class="meal-card-header">
@@ -408,21 +340,17 @@
           <input type="text" id="adm-dn" class="menu-input" placeholder="e.g. Phulka, Rajma, Rice">
         </div>
 
-        <button onclick="saveAdminMenuData()" class="save-menu-btn">
-          <span>Save Menu Changes</span>
-        </button>
+        <button onclick="saveAdminMenuData()" class="save-menu-btn">Save Menu Changes</button>
       </div>
 
     </div>
   </div>
 
-  <!-- Toast Notification -->
   <div class="toast-admin" id="admin-toast" style="display: none;">
     <span>Admin mode unlocked</span>
     <span class="toast-close" onclick="document.getElementById('admin-toast').style.display='none'">&times;</span>
   </div>
 
-  <!-- Thank You Pop-Up -->
   <div class="modal-overlay" id="thankyou-modal">
     <div class="admin-card" style="text-align: center;">
       <h3 style="font-family: 'DM Serif Display', serif; font-size: 24px;">Thank You!</h3>
@@ -432,7 +360,7 @@
   </div>
 
   <script>
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCdaFnxEh9-D_qv99rUSl8JEpDUz-ouw3g",
   authDomain: "mess-feedback-system-b919c.firebaseapp.com",
@@ -443,6 +371,10 @@ const firebaseConfig = {
   appId: "1:413792360080:web:c70c0d4008e07dfdea6a15",
   measurementId: "G-DWSN6EHPKJ"
 };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     const defaultMenu = {
       Sunday: { Breakfast: ["Aloo Paratha", "Curd"], Lunch: ["Veg Biryani", "Raita"], Dinner: ["Phulka roti", "Rajma masala", "Steamed rice", "Mixed vegetable", "Kheer"] },
       Monday: { Breakfast: ["Poha", "Tea"], Lunch: ["Dal Makhani", "Roti", "Rice"], Dinner: ["Aloo Gobi", "Roti", "Dal"] },
@@ -460,7 +392,6 @@ const firebaseConfig = {
     let currentItemRatingTab = 'daily';
     let currentMealFilter = 'Breakfast';
 
-    // Unique Device Identifier Generate or Fetch
     function getDeviceId() {
       let deviceId = localStorage.getItem('mess_device_id');
       if (!deviceId) {
@@ -492,11 +423,6 @@ const firebaseConfig = {
     function getMenu() {
       const saved = localStorage.getItem('mess_menu');
       return saved ? JSON.parse(saved) : defaultMenu;
-    }
-
-    function getReviews() {
-      const saved = localStorage.getItem('mess_reviews');
-      return saved ? JSON.parse(saved) : [];
     }
 
     function updateLogic() {
@@ -596,6 +522,7 @@ const firebaseConfig = {
       `).join('');
     }
 
+    // --- SUBMIT TO CENTRAL FIREBASE DATABASE ---
     document.getElementById('review-form').addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -614,24 +541,24 @@ const firebaseConfig = {
 
       const newEntry = {
         deviceId: getDeviceId(),
-        timestamp: new Date().getTime(),
+        timestamp: Date.now(),
         meal: currentActiveMealType,
         ratings: ratings,
         comment: commentText
       };
 
-      const reviews = getReviews();
-      reviews.push(newEntry);
-      localStorage.setItem('mess_reviews', JSON.stringify(reviews));
-
-      // Mark this device as submitted for this meal today
-      markSubmittedToday(currentActiveMealType);
-
-      document.getElementById('thankyou-modal').style.display = "flex";
-      checkAndToggleSubmissionState(currentActiveMealType);
+      // Push to Firebase Cloud Database
+      database.ref('reviews').push(newEntry, (error) => {
+        if (error) {
+          alert("Error saving review: " + error.message);
+        } else {
+          markSubmittedToday(currentActiveMealType);
+          document.getElementById('thankyou-modal').style.display = "flex";
+          checkAndToggleSubmissionState(currentActiveMealType);
+        }
+      });
     });
 
-    /* Admin Password Modal Functions */
     function openAdminAuthModal() {
       document.getElementById('auth-modal').style.display = "flex";
       document.getElementById('admin-pin-input').value = "";
@@ -639,9 +566,7 @@ const firebaseConfig = {
       document.getElementById('admin-pin-input').focus();
     }
 
-    function closeAdminAuthModal() {
-      document.getElementById('auth-modal').style.display = "none";
-    }
+    function closeAdminAuthModal() { document.getElementById('auth-modal').style.display = "none"; }
 
     function verifyAdminPIN() {
       const pin = document.getElementById('admin-pin-input').value;
@@ -668,13 +593,9 @@ const firebaseConfig = {
       document.getElementById('btn-item-weekly').classList.toggle('active', tab === 'weekly');
       document.getElementById('btn-item-monthly').classList.toggle('active', tab === 'monthly');
       
-      const labels = {
-        daily: 'PAST 24 HOURS',
-        weekly: 'PAST 7 DAYS',
-        monthly: 'PAST 30 DAYS'
-      };
+      const labels = { daily: 'PAST 24 HOURS', weekly: 'PAST 7 DAYS', monthly: 'PAST 30 DAYS' };
       document.getElementById('item-rating-subtitle').innerText = labels[tab];
-      renderFilteredItemRatings();
+      populateAdminInsights();
     }
 
     function switchMealFilter(meal) {
@@ -683,45 +604,45 @@ const firebaseConfig = {
       document.getElementById('btn-meal-lunch').classList.toggle('active', meal === 'Lunch');
       document.getElementById('btn-meal-dinner').classList.toggle('active', meal === 'Dinner');
 
-      renderFilteredItemRatings();
+      populateAdminInsights();
     }
 
-    function renderFilteredItemRatings() {
-      const reviews = getReviews();
-      const now = new Date().getTime();
-      
-      let timeframeMs;
-      if (currentItemRatingTab === 'daily') {
-        timeframeMs = 24 * 60 * 60 * 1000;
-      } else if (currentItemRatingTab === 'weekly') {
-        timeframeMs = 7 * 24 * 60 * 60 * 1000;
-      } else {
-        timeframeMs = 30 * 24 * 60 * 60 * 1000;
-      }
+    // --- READ FROM CENTRAL FIREBASE DATABASE ---
+    function populateAdminInsights() {
+      database.ref('reviews').once('value').then((snapshot) => {
+        const data = snapshot.val();
+        const reviews = data ? Object.values(data) : [];
 
-      const mealData = {
-        Breakfast: { sums: {}, counts: {} },
-        Lunch: { sums: {}, counts: {} },
-        Dinner: { sums: {}, counts: {} }
-      };
+        renderFilteredItemRatings(reviews);
 
+        const comments = reviews.filter(r => r.comment);
+        document.getElementById('comments-count-lbl').innerText = comments.length;
+
+        document.getElementById('admin-recent-comments').innerHTML = comments.slice(-10).reverse().map(c => `
+          <div class="comment-row">
+            <span class="comment-tag">${c.meal || 'Meal'}</span>
+            <span class="comment-text">"${c.comment}"</span>
+          </div>
+        `).join('') || '<div style="font-size:12px; color:#888;">No comments yet</div>';
+
+        selectAdminDay(days[new Date().getDay()]);
+      });
+    }
+
+    function renderFilteredItemRatings(reviews) {
+      const now = Date.now();
+      let timeframeMs = 24 * 60 * 60 * 1000;
+      if (currentItemRatingTab === 'weekly') timeframeMs = 7 * 24 * 60 * 60 * 1000;
+      if (currentItemRatingTab === 'monthly') timeframeMs = 30 * 24 * 60 * 60 * 1000;
+
+      const sums = {}, counts = {};
       let totalRatingsFound = 0;
 
       reviews.forEach(r => {
-        if ((now - r.timestamp) <= timeframeMs) {
-          const mealType = r.meal || 'Breakfast';
-
-          if (mealType !== currentMealFilter) {
-            return;
-          }
-
-          if (!mealData[mealType]) {
-            mealData[mealType] = { sums: {}, counts: {} };
-          }
-
+        if ((now - r.timestamp) <= timeframeMs && r.meal === currentMealFilter) {
           for (const [item, val] of Object.entries(r.ratings || {})) {
-            mealData[mealType].sums[item] = (mealData[mealType].sums[item] || 0) + val;
-            mealData[mealType].counts[item] = (mealData[mealType].counts[item] || 0) + 1;
+            sums[item] = (sums[item] || 0) + val;
+            counts[item] = (counts[item] || 0) + 1;
             totalRatingsFound++;
           }
         }
@@ -733,61 +654,21 @@ const firebaseConfig = {
         return;
       }
 
-      const mealIcons = { Breakfast: '🌅', Lunch: '☀️', Dinner: '🌙' };
-      let htmlOutput = "";
+      let htmlOutput = `<div class="meal-rating-group"><div class="meal-group-title"><span>🍽️</span><span>${currentMealFilter}</span></div>`;
 
-      for (const meal in mealData) {
-        if (meal !== currentMealFilter) {
-          continue;
-        }
+      Object.keys(sums).forEach(item => {
+        const count = counts[item];
+        const avg = sums[item] / count;
+        htmlOutput += `
+          <div class="item-rating-row">
+            <span>${item}</span>
+            <span class="item-rating-val">★ ${avg.toFixed(1)} <span class="rating-count">(${count})</span></span>
+          </div>
+        `;
+      });
 
-        const sums = mealData[meal].sums;
-        const counts = mealData[meal].counts;
-        const items = Object.keys(sums);
-
-        if (items.length > 0) {
-          htmlOutput += `
-            <div class="meal-rating-group">
-              <div class="meal-group-title">
-                <span>${mealIcons[meal] || '🍽️'}</span>
-                <span>${meal}</span>
-              </div>
-          `;
-
-          items.forEach(item => {
-            const count = counts[item];
-            const avg = sums[item] / count;
-            htmlOutput += `
-              <div class="item-rating-row">
-                <span>${item}</span>
-                <span class="item-rating-val">★ ${avg.toFixed(1)} <span class="rating-count">(${count})</span></span>
-              </div>
-            `;
-          });
-
-          htmlOutput += `</div>`;
-        }
-      }
-
+      htmlOutput += `</div>`;
       document.getElementById('admin-item-ratings').innerHTML = htmlOutput;
-    }
-
-    function populateAdminInsights() {
-      const reviews = getReviews();
-
-      renderFilteredItemRatings();
-
-      const comments = reviews.filter(r => r.comment);
-      document.getElementById('comments-count-lbl').innerText = comments.length;
-
-      document.getElementById('admin-recent-comments').innerHTML = comments.slice(-5).reverse().map(c => `
-        <div class="comment-row">
-          <span class="comment-tag">${c.meal || 'Breakfast'}</span>
-          <span class="comment-text">"${c.comment}"</span>
-        </div>
-      `).join('') || '<div style="font-size:12px; color:#888;">No comments yet</div>';
-
-      selectAdminDay(days[new Date().getDay()]);
     }
 
     function selectAdminDay(dayName) {
