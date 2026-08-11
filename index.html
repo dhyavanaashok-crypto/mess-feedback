@@ -360,17 +360,17 @@
   </div>
 
   <script>
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCdaFnxEh9-D_qv99rUSl8JEpDUz-ouw3g",
-  authDomain: "mess-feedback-system-b919c.firebaseapp.com",
-  databaseURL: "https://mess-feedback-system-b919c-default-rtdb.firebaseio.com",
-  projectId: "mess-feedback-system-b919c",
-  storageBucket: "mess-feedback-system-b919c.firebasestorage.app",
-  messagingSenderId: "413792360080",
-  appId: "1:413792360080:web:c70c0d4008e07dfdea6a15",
-  measurementId: "G-DWSN6EHPKJ"
-};
+    // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCdaFnxEh9-D_qv99rUSl8JEpDUz-ouw3g",
+      authDomain: "mess-feedback-system-b919c.firebaseapp.com",
+      databaseURL: "https://mess-feedback-system-b919c-default-rtdb.firebaseio.com",
+      projectId: "mess-feedback-system-b919c",
+      storageBucket: "mess-feedback-system-b919c.firebasestorage.app",
+      messagingSenderId: "413792360080",
+      appId: "1:413792360080:web:c70c0d4008e07dfdea6a15",
+      measurementId: "G-DWSN6EHPKJ"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
@@ -429,6 +429,9 @@ const firebaseConfig = {
         } else {
           callback(defaultMenu);
         }
+      }).catch(err => {
+        console.error("Firebase read error:", err);
+        callback(defaultMenu);
       });
     }
 
