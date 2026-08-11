@@ -360,16 +360,16 @@
   </div>
 
   <script>
-   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCdaFnxEh9-D_qv99rUSl8JEpDUz-ouw3g",
-  authDomain: "mess-feedback-system-b919c.firebaseapp.com",
-  databaseURL: "https://mess-feedback-system-b919c-default-rtdb.firebaseio.com",
-  projectId: "mess-feedback-system-b919c",
-  storageBucket: "mess-feedback-system-b919c.firebasestorage.app",
-  messagingSenderId: "413792360080",
-  appId: "1:413792360080:web:c70c0d4008e07dfdea6a15",
-  measurementId: "G-DWSN6EHPKJ"
+  apiKey: "AIzaSyCdaFnxEh9-D_qv99rUSl8JEpDUz-ouw3g",
+  authDomain: "mess-feedback-system-b919c.firebaseapp.com",
+  databaseURL: "https://mess-feedback-system-b919c-default-rtdb.firebaseio.com",
+  projectId: "mess-feedback-system-b919c",
+  storageBucket: "mess-feedback-system-b919c.firebasestorage.app",
+  messagingSenderId: "413792360080",
+  appId: "1:413792360080:web:c70c0d4008e07dfdea6a15",
+  measurementId: "G-DWSN6EHPKJ"
 };
 
     firebase.initializeApp(firebaseConfig);
@@ -420,9 +420,16 @@ const firebaseConfig = {
       localStorage.setItem('mess_submitted_logs', JSON.stringify(logs));
     }
 
-    function getMenu() {
-      const saved = localStorage.getItem('mess_menu');
-      return saved ? JSON.parse(saved) : defaultMenu;
+    // --- FIREBASE CLOUD MENU FUNCTIONS ---
+    function loadCloudMenu(callback) {
+      database.ref('menu').once('value').then((snapshot) => {
+        const cloudMenu = snapshot.val();
+        if (cloudMenu) {
+          callback(cloudMenu);
+        } else {
+          callback(defaultMenu);
+        }
+      });
     }
 
     function updateLogic() {
@@ -460,28 +467,30 @@ const firebaseConfig = {
         state = "BETWEEN"; nextMeal = "Breakfast"; nextTimeStr = "8:00 AM";
       }
 
-      const menuData = getMenu()[dayName];
+      loadCloudMenu((allMenu) => {
+        const menuData = allMenu[dayName] || { Breakfast: [], Lunch: [], Dinner: [] };
 
-      if (state === "ACTIVE") {
-        currentActiveMealType = activeMeal;
-        bannerLabel.innerText = "CURRENT SERVICE";
-        bannerTitle.innerText = `${activeMeal} is live`;
-        offView.style.display = "none";
-        activeView.style.display = "block";
-        document.getElementById('active-meal-title').innerText = `${dayName} - ${activeMeal}`;
-        currentActiveMealItems = menuData[activeMeal] || [];
-        
-        checkAndToggleSubmissionState(activeMeal);
-      } else {
-        bannerLabel.innerText = "NEXT SERVICE";
-        bannerTitle.innerText = `${nextMeal} starts at ${nextTimeStr}`;
-        offSubtitle.innerText = `${nextMeal} begins at ${nextTimeStr}. We'll be ready for you.`;
-        upcomingMealTitle.innerText = nextMeal;
+        if (state === "ACTIVE") {
+          currentActiveMealType = activeMeal;
+          bannerLabel.innerText = "CURRENT SERVICE";
+          bannerTitle.innerText = `${activeMeal} is live`;
+          offView.style.display = "none";
+          activeView.style.display = "block";
+          document.getElementById('active-meal-title').innerText = `${dayName} - ${activeMeal}`;
+          currentActiveMealItems = menuData[activeMeal] || [];
+          
+          checkAndToggleSubmissionState(activeMeal);
+        } else {
+          bannerLabel.innerText = "NEXT SERVICE";
+          bannerTitle.innerText = `${nextMeal} starts at ${nextTimeStr}`;
+          offSubtitle.innerText = `${nextMeal} begins at ${nextTimeStr}. We'll be ready for you.`;
+          upcomingMealTitle.innerText = nextMeal;
 
-        offView.style.display = "block";
-        activeView.style.display = "none";
-        renderChips(menuData[nextMeal] || []);
-      }
+          offView.style.display = "block";
+          activeView.style.display = "none";
+          renderChips(menuData[nextMeal] || []);
+        }
+      });
     }
 
     function checkAndToggleSubmissionState(activeMeal) {
@@ -522,7 +531,7 @@ const firebaseConfig = {
       `).join('');
     }
 
-    // --- SUBMIT TO CENTRAL FIREBASE DATABASE ---
+    // --- SUBMIT REVIEW TO FIREBASE ---
     document.getElementById('review-form').addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -547,7 +556,6 @@ const firebaseConfig = {
         comment: commentText
       };
 
-      // Push to Firebase Cloud Database
       database.ref('reviews').push(newEntry, (error) => {
         if (error) {
           alert("Error saving review: " + error.message);
@@ -607,7 +615,7 @@ const firebaseConfig = {
       populateAdminInsights();
     }
 
-    // --- READ FROM CENTRAL FIREBASE DATABASE ---
+    // --- READ FROM FIREBASE DATABASE ---
     function populateAdminInsights() {
       database.ref('reviews').once('value').then((snapshot) => {
         const data = snapshot.val();
@@ -681,22 +689,33 @@ const firebaseConfig = {
     }
 
     function loadAdminMenuData() {
-      const data = getMenu()[selectedAdminDay] || { Breakfast: [], Lunch: [], Dinner: [] };
-      document.getElementById('adm-bf').value = (data.Breakfast || []).join(', ');
-      document.getElementById('adm-lunch').value = (data.Lunch || []).join(', ');
-      document.getElementById('adm-dn').value = (data.Dinner || []).join(', ');
+      loadCloudMenu((menu) => {
+        const data = menu[selectedAdminDay] || { Breakfast: [], Lunch: [], Dinner: [] };
+        document.getElementById('adm-bf').value = (data.Breakfast || []).join(', ');
+        document.getElementById('adm-lunch').value = (data.Lunch || []).join(', ');
+        document.getElementById('adm-dn').value = (data.Dinner || []).join(', ');
+      });
     }
 
+    // --- SAVE MENU TO FIREBASE CLOUD DATABASE ---
     function saveAdminMenuData() {
-      const menu = getMenu();
-      menu[selectedAdminDay] = {
-        Breakfast: document.getElementById('adm-bf').value.split(',').map(s => s.trim()).filter(Boolean),
-        Lunch: document.getElementById('adm-lunch').value.split(',').map(s => s.trim()).filter(Boolean),
-        Dinner: document.getElementById('adm-dn').value.split(',').map(s => s.trim()).filter(Boolean)
-      };
-      localStorage.setItem('mess_menu', JSON.stringify(menu));
-      alert(`${selectedAdminDay} ka menu save ho gaya!`);
-      updateLogic();
+      loadCloudMenu((menu) => {
+        const updatedMenu = { ...menu };
+        updatedMenu[selectedAdminDay] = {
+          Breakfast: document.getElementById('adm-bf').value.split(',').map(s => s.trim()).filter(Boolean),
+          Lunch: document.getElementById('adm-lunch').value.split(',').map(s => s.trim()).filter(Boolean),
+          Dinner: document.getElementById('adm-dn').value.split(',').map(s => s.trim()).filter(Boolean)
+        };
+
+        database.ref('menu').set(updatedMenu, (error) => {
+          if (error) {
+            alert("Menu save nahi ho paya: " + error.message);
+          } else {
+            alert(`${selectedAdminDay} ka menu sabhi devices ke liye save ho gaya!`);
+            updateLogic();
+          }
+        });
+      });
     }
 
     updateLogic();
