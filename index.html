@@ -97,6 +97,15 @@
       width: 100%; background: var(--btn-green); color: #fff; border: none;
       padding: 12px; border-radius: 6px; font-size: 15px; font-weight: 600; margin-top: 15px; cursor: pointer;
     }
+    .submit-btn:disabled {
+      background: #ccc; cursor: not-allowed;
+    }
+
+    .already-submitted-notice {
+      background: #fff3cd; color: #856404; border: 1px solid #ffeeba;
+      padding: 12px; border-radius: 6px; font-size: 13px; text-align: center;
+      margin-bottom: 15px; font-weight: 600;
+    }
 
     .admin-footer-link { text-align: center; margin-top: 35px; font-size: 12px; color: var(--muted-text); cursor: pointer; text-decoration: underline; }
 
@@ -280,6 +289,11 @@
     <div id="active-time-view" style="display: none;">
       <div class="active-meal-card">
         <h2 style="font-family: 'DM Serif Display', serif; margin-bottom: 15px;" id="active-meal-title">--</h2>
+        
+        <div id="already-submitted-msg" class="already-submitted-notice" style="display: none;">
+          ✓ Aapne is meal (Breakfast/Lunch/Dinner) ke liye aaj ka feedback de diya hai. Thank you!
+        </div>
+
         <form id="review-form">
           <div id="rating-items-container"></div>
 
@@ -288,7 +302,7 @@
             <textarea id="user-comment" placeholder="Khane ke bare me apni rai likhein..."></textarea>
           </div>
 
-          <button type="submit" class="submit-btn">Submit Review</button>
+          <button type="submit" id="review-submit-btn" class="submit-btn">Submit Review</button>
         </form>
       </div>
     </div>
@@ -430,9 +444,39 @@
 
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     let currentActiveMealItems = [];
+    let currentActiveMealType = "";
     let selectedAdminDay = days[new Date().getDay()];
     let currentItemRatingTab = 'daily';
     let currentMealFilter = 'Breakfast';
+
+    // Unique Device Identifier Generate or Fetch
+    function getDeviceId() {
+      let deviceId = localStorage.getItem('mess_device_id');
+      if (!deviceId) {
+        deviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem('mess_device_id', deviceId);
+      }
+      return deviceId;
+    }
+
+    function getTodayKey() {
+      const today = new Date();
+      return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    }
+
+    function hasSubmittedToday(mealType) {
+      const logs = JSON.parse(localStorage.getItem('mess_submitted_logs') || '{}');
+      const todayKey = getTodayKey();
+      return logs[todayKey] && logs[todayKey][mealType];
+    }
+
+    function markSubmittedToday(mealType) {
+      const logs = JSON.parse(localStorage.getItem('mess_submitted_logs') || '{}');
+      const todayKey = getTodayKey();
+      if (!logs[todayKey]) logs[todayKey] = {};
+      logs[todayKey][mealType] = true;
+      localStorage.setItem('mess_submitted_logs', JSON.stringify(logs));
+    }
 
     function getMenu() {
       const saved = localStorage.getItem('mess_menu');
@@ -482,13 +526,15 @@
       const menuData = getMenu()[dayName];
 
       if (state === "ACTIVE") {
+        currentActiveMealType = activeMeal;
         bannerLabel.innerText = "CURRENT SERVICE";
         bannerTitle.innerText = `${activeMeal} is live`;
         offView.style.display = "none";
         activeView.style.display = "block";
         document.getElementById('active-meal-title').innerText = `${dayName} - ${activeMeal}`;
         currentActiveMealItems = menuData[activeMeal] || [];
-        renderRatingItems(currentActiveMealItems);
+        
+        checkAndToggleSubmissionState(activeMeal);
       } else {
         bannerLabel.innerText = "NEXT SERVICE";
         bannerTitle.innerText = `${nextMeal} starts at ${nextTimeStr}`;
@@ -501,17 +547,37 @@
       }
     }
 
+    function checkAndToggleSubmissionState(activeMeal) {
+      const isAlreadySubmitted = hasSubmittedToday(activeMeal);
+      const submitBtn = document.getElementById('review-submit-btn');
+      const msgBox = document.getElementById('already-submitted-msg');
+
+      renderRatingItems(currentActiveMealItems, isAlreadySubmitted);
+
+      if (isAlreadySubmitted) {
+        msgBox.style.display = "block";
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Already Submitted Today";
+        document.getElementById('user-comment').disabled = true;
+      } else {
+        msgBox.style.display = "none";
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Submit Review";
+        document.getElementById('user-comment').disabled = false;
+      }
+    }
+
     function renderChips(items) {
       document.getElementById('upcoming-chips').innerHTML = items.map(item => `<div class="chip">${item}</div>`).join('');
     }
 
-    function renderRatingItems(items) {
+    function renderRatingItems(items, disabled = false) {
       document.getElementById('rating-items-container').innerHTML = items.map((item, idx) => `
         <div class="item-row">
           <span class="item-name">${item}</span>
           <div class="star-rating">
             ${[5, 4, 3, 2, 1].map(star => `
-              <input type="radio" id="star-${idx}-${star}" name="rate-${idx}" value="${star}" required />
+              <input type="radio" id="star-${idx}-${star}" name="rate-${idx}" value="${star}" ${disabled ? 'disabled' : ''} required />
               <label for="star-${idx}-${star}">★</label>
             `).join('')}
           </div>
@@ -521,6 +587,11 @@
 
     document.getElementById('review-form').addEventListener('submit', (e) => {
       e.preventDefault();
+
+      if (hasSubmittedToday(currentActiveMealType)) {
+        alert("Aap is meal ke liye pehle hi feedback de chuke hain.");
+        return;
+      }
       
       const ratings = {};
       currentActiveMealItems.forEach((item, idx) => {
@@ -531,8 +602,9 @@
       const commentText = document.getElementById('user-comment').value.trim();
 
       const newEntry = {
+        deviceId: getDeviceId(),
         timestamp: new Date().getTime(),
-        meal: document.getElementById('active-meal-title').innerText.split(' - ')[1] || 'Breakfast',
+        meal: currentActiveMealType,
         ratings: ratings,
         comment: commentText
       };
@@ -541,8 +613,11 @@
       reviews.push(newEntry);
       localStorage.setItem('mess_reviews', JSON.stringify(reviews));
 
+      // Mark this device as submitted for this meal today
+      markSubmittedToday(currentActiveMealType);
+
       document.getElementById('thankyou-modal').style.display = "flex";
-      e.target.reset();
+      checkAndToggleSubmissionState(currentActiveMealType);
     });
 
     /* Admin Password Modal Functions */
