@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mess Food Feedback & Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #faf9f5;
+      --text-dark: #1b3223;
+      --accent-orange: #d96b27;
+      --border-color: #e5e3da;
+      --muted-text: #6b7280;
+      --chip-bg: #f3f1e9;
+      --btn-green: #1b3223;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px 15px;
+    }
+
+    .container { width: 100%; max-width: 480px; margin: 0 auto; }
+
+    .header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 38px;
+      line-height: 1.1;
+      color: var(--accent-orange);
+    }
+    .header h1 span { color: var(--text-dark); font-style: italic; }
+    .header p { color: var(--muted-text); font-size: 14px; margin-top: 10px; }
+
+    .divider { height: 1px; background-color: var(--border-color); margin: 20px 0; }
+
+    .service-banner { display: flex; align-items: center; gap: 12px; }
+    .icon-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #e2ece7; display: flex; align-items: center;
+      justify-content: center; font-size: 16px;
+    }
+    .banner-text .label {
+      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--accent-orange); font-weight: 700;
+    }
+    .banner-text .time-title { font-family: 'DM Serif Display', serif; font-size: 20px; }
+
+    .between-services { text-align: center; padding: 35px 20px 20px; }
+    .large-icon {
+      width: 50px; height: 50px; border-radius: 50%;
+      border: 1px solid var(--border-color); display: flex;
+      align-items: center; justify-content: center; margin: 0 auto 20px;
+      color: var(--accent-orange); font-size: 20px;
+    }
+    .between-services h2 { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 8px; }
+    .between-services p { color: var(--muted-text); font-size: 13px; }
+
+    .upcoming-card {
+      border: 1px solid var(--border-color); border-radius: 8px;
+      padding: 18px; margin-top: 25px; background: #fff;
+    }
+    .upcoming-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f0eee6;
+    }
+    .upcoming-header .tag { font-size: 11px; letter-spacing: 1.5px; color: var(--accent-orange); font-weight: 700; }
+    .upcoming-header .meal-name { font-family: 'DM Serif Display', serif; font-size: 20px; }
+
+    .chips-container { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { background-color: var(--chip-bg); padding: 6px 14px; border-radius: 4px; font-size: 13px; }
+
+    .active-meal-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); }
+    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+    .item-name { font-size: 15px; font-weight: 500; }
+
+    .star-rating { display: flex; flex-direction: row-reverse; gap: 4px; }
+    .star-rating input { display: none; }
+    .star-rating label { font-size: 22px; color: #ddd; cursor: pointer; }
+    .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: var(--accent-orange); }
+
+    textarea {
+      width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border-color);
+      border-radius: 6px; margin-top: 8px; background: var(--bg-color); font-family: inherit;
+    }
+
+    .submit-btn {
+      width: 100%; background: var(--btn-green); color: #fff; border: none;
+      padding: 12px; border-radius: 6px; font-size: 15px; font-weight: 600; margin-top: 15px; cursor: pointer;
+    }
+
+    .admin-footer-link { text-align: center; margin-top: 35px; font-size: 12px; color: var(--muted-text); cursor: pointer; text-decoration: underline; }
+
+    /* Modal Overlay Common */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+      justify-content: center; align-items: center; z-index: 1000;
+    }
+
+    /* Admin Password Auth Modal */
+    .auth-card {
+      background: #fff; padding: 32px 28px; border-radius: 6px; width: 90%; max-width: 380px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12); position: relative; border: 1px solid var(--border-color);
+    }
+    .auth-sub { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--accent-orange); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+    .auth-title { font-family: 'DM Serif Display', serif; font-size: 32px; margin-top: 4px; margin-bottom: 8px; color: var(--text-dark); }
+    .auth-desc { font-size: 13px; color: var(--muted-text); margin-bottom: 20px; line-height: 1.4; }
+    .auth-input {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 4px;
+      font-size: 14px; font-family: inherit; outline: none; margin-bottom: 15px; background: var(--bg-color);
+      transition: border-color 0.2s;
+    }
+    .auth-input:focus { border-color: var(--text-dark); background: #fff; }
+    .auth-btn {
+      width: auto; padding: 12px 20px; background: var(--btn-green); color: #fff; border: none;
+      border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+    }
+    .auth-btn:hover { opacity: 0.9; }
+    .auth-error { color: #d32f2f; font-size: 12px; margin-bottom: 12px; display: none; }
+
+    /* Admin Overlay Dashboard */
+    .admin-card {
+      background: #faf9f5; padding: 30px 24px; border-radius: 4px; width: 92%; max-width: 440px;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.15); position: relative;
+      color: var(--text-dark); border: 1px solid var(--border-color);
+    }
+    .admin-close { position: absolute; top: 20px; right: 20px; font-size: 20px; cursor: pointer; color: var(--muted-text); }
+
+    .admin-sub { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--accent-orange); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+    .admin-title { font-family: 'DM Serif Display', serif; font-size: 34px; margin-top: 5px; margin-bottom: 25px; line-height: 1.1; color: var(--text-dark); }
+
+    /* Section Headings */
+    .sec-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+    .sec-title { font-family: 'DM Serif Display', serif; font-size: 20px; }
+    .sec-sub { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--muted-text); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+
+    /* Filter Toggle Tabs */
+    .tab-toggle { display: flex; gap: 4px; background: #e5e3da; padding: 3px; border-radius: 4px; margin-bottom: 8px; }
+    .tab-btn {
+      flex: 1; border: none; background: transparent; padding: 6px 0; font-size: 10px;
+      font-weight: 700; font-family: 'Space Mono', monospace; text-transform: uppercase;
+      color: var(--muted-text); cursor: pointer; border-radius: 3px; transition: all 0.2s ease;
+    }
+    .tab-btn.active { background: #fff; color: var(--text-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* Meal Selection Sub-Tabs */
+    .meal-tab-toggle { display: flex; gap: 4px; background: #eeebd9; padding: 3px; border-radius: 4px; margin-bottom: 15px; }
+    .meal-tab-btn {
+      flex: 1; border: none; background: transparent; padding: 5px 0; font-size: 9.5px;
+      font-weight: 700; font-family: 'Space Mono', monospace; text-transform: uppercase;
+      color: var(--muted-text); cursor: pointer; border-radius: 3px; transition: all 0.2s ease;
+    }
+    .meal-tab-btn.active { background: var(--accent-orange); color: #fff; }
+
+    /* Main Meal Ratings Container */
+    .meal-ratings-box {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 25px;
+    }
+
+    .meal-rating-group { margin-bottom: 16px; }
+    .meal-rating-group:last-child { margin-bottom: 0; }
+
+    .meal-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--accent-orange);
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #f0eee6;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .item-rating-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed #f0eee6; }
+    .item-rating-row:last-child { border-bottom: none; }
+    .item-rating-val { color: var(--accent-orange); font-weight: 700; font-family: 'Space Mono', monospace; }
+    .rating-count { color: var(--muted-text); font-weight: 400; font-size: 11px; }
+
+    /* Comments Section */
+    .comment-row { padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 12px; display: flex; gap: 8px; align-items: center; }
+    .comment-tag { font-size: 10px; font-weight: 700; color: var(--accent-orange); font-family: 'Space Mono', monospace; min-width: 65px; }
+    .comment-text { font-family: 'Space Mono', monospace; color: #444; }
+
+    /* Menu Control Styles */
+    .day-selector { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-top: 12px; margin-bottom: 15px; scrollbar-width: none; }
+    .day-selector::-webkit-scrollbar { display: none; }
+    .day-pill {
+      background: #f0eee6; border: 1px solid var(--border-color); padding: 6px 12px;
+      border-radius: 20px; font-size: 11px; font-family: 'Space Mono', monospace;
+      font-weight: 700; cursor: pointer; white-space: nowrap; color: var(--muted-text);
+      transition: all 0.2s ease;
+    }
+    .day-pill.active { background: var(--text-dark); color: #fff; border-color: var(--text-dark); }
+
+    .menu-edit-container { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .meal-edit-card { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; }
+    .meal-card-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .meal-icon { font-size: 14px; }
+    .meal-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent-orange); font-family: 'Space Mono', monospace; text-transform: uppercase; }
+    .menu-input {
+      width: 100%; padding: 8px 10px; border: 1px solid #f0eee6; border-radius: 4px;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; background: var(--bg-color); color: var(--text-dark);
+      outline: none; transition: border-color 0.2s;
+    }
+    .menu-input:focus { border-color: var(--accent-orange); background: #fff; }
+    
+    .save-menu-btn {
+      width: 100%; background: var(--text-dark); color: #fff; border: none; padding: 12px;
+      border-radius: 6px; font-size: 13px; font-weight: 700; font-family: 'Space Mono', monospace;
+      letter-spacing: 1px; text-transform: uppercase; margin-top: 10px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s;
+    }
+    .save-menu-btn:hover { opacity: 0.9; }
+
+    /* Admin Unlocked Toast */
+    .toast-admin {
+      position: fixed; bottom: 15px; right: 15px; background: #11281a; color: #fff;
+      padding: 10px 16px; border-radius: 4px; font-size: 12px; display: flex;
+      align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001;
+    }
+    .toast-close { cursor: pointer; font-size: 14px; opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>How your<br><span>plate felt.</span></h1>
+      <p>Your honest feedback helps us make every meal better, one serving at a time.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="service-banner">
+      <div class="icon-circle">🕒</div>
+      <div class="banner-text">
+        <div class="label" id="banner-label">NEXT SERVICE</div>
+        <div class="time-title" id="banner-title">--</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Off-time Screen -->
+    <div id="off-time-view">
+      <div class="between-services">
+        <div class="large-icon">🕒</div>
+        <h2>The kitchen is between services.</h2>
+        <p id="off-time-subtitle">We'll be ready for you soon.</p>
+      </div>
+
+      <div class="upcoming-card" id="upcoming-card">
+        <div class="upcoming-header">
+          <span class="tag">UP NEXT</span>
+          <span class="meal-name" id="upcoming-meal-title">--</span>
+        </div>
+        <div class="chips-container" id="upcoming-chips"></div>
+      </div>
+    </div>
+
+    <!-- Active Rating Screen -->
+    <div id="active-time-view" style="display: none;">
+      <div class="active-meal-card">
+        <h2 style="font-family: 'DM Serif Display', serif; margin-bottom: 15px;" id="active-meal-title">--</h2>
+        <form id="review-form">
+          <div id="rating-items-container"></div>
+
+          <div style="margin-top: 15px;">
+            <label style="font-size: 13px; font-weight: 600;">Comments & Suggestions</label>
+            <textarea id="user-comment" placeholder="Khane ke bare me apni rai likhein..."></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">Submit Review</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-footer-link" onclick="openAdminAuthModal()">Admin Dashboard & Feed</div>
+  </div>
+
+  <!-- Custom Admin Access/PIN Modal -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="auth-card">
+      <span class="admin-close" onclick="closeAdminAuthModal()">&times;</span>
+      <div class="auth-sub">STAFF ACCESS</div>
+      <h2 class="auth-title">Admin panel</h2>
+      <p class="auth-desc">Enter the mess manager PIN to update today's menus.</p>
+      
+      <div class="auth-error" id="auth-error-msg">Incorrect PIN. Please try again.</div>
+      
+      <input type="password" id="admin-pin-input" class="auth-input" placeholder="Enter PIN">
+      <button class="auth-btn" onclick="verifyAdminPIN()">Unlock panel</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel Dashboard Overlay -->
+  <div class="modal-overlay" id="admin-modal">
+    <div class="admin-card">
+      <span class="admin-close" onclick="closeAdminModal()">&times;</span>
+      
+      <div class="admin-sub">MESS INSIGHTS</div>
+      <h2 class="admin-title">Today's control room</h2>
+
+      <!-- Item Ratings Section Header & Time Tabs -->
+      <div class="sec-head">
+        <span class="sec-title">Item ratings</span>
+        <span class="sec-sub" id="item-rating-subtitle">PAST 24 HOURS</span>
+      </div>
+
+      <!-- Time Tabs (Daily / Weekly / Monthly) -->
+      <div class="tab-toggle">
+        <button class="tab-btn active" id="btn-item-daily" onclick="switchItemRatingTab('daily')">Daily</button>
+        <button class="tab-btn" id="btn-item-weekly" onclick="switchItemRatingTab('weekly')">Weekly</button>
+        <button class="tab-btn" id="btn-item-monthly" onclick="switchItemRatingTab('monthly')">Monthly</button>
+      </div>
+
+      <!-- Meal Filter Tabs (Breakfast / Lunch / Dinner) -->
+      <div class="meal-tab-toggle">
+        <button class="meal-tab-btn active" id="btn-meal-bf" onclick="switchMealFilter('Breakfast')">Breakfast</button>
+        <button class="meal-tab-btn" id="btn-meal-lunch" onclick="switchMealFilter('Lunch')">Lunch</button>
+        <button class="meal-tab-btn" id="btn-meal-dinner" onclick="switchMealFilter('Dinner')">Dinner</button>
+      </div>
+
+      <!-- Main Meal-wise Ratings Outer Box -->
+      <div class="meal-ratings-box" id="admin-item-ratings">
+        <!-- Dynamic Meal-Wise Item Ratings Render Here -->
+      </div>
+
+      <!-- Recent Comments -->
+      <div class="sec-head">
+        <span class="sec-title">Recent comments</span>
+        <span class="sec-sub" id="comments-count-lbl">0</span>
+      </div>
+      <div id="admin-recent-comments" style="margin-bottom: 20px;"></div>
+
+      <!-- Menu Control Section -->
+      <div class="sec-head" style="margin-top: 30px;">
+        <span class="sec-title">Menu control</span>
+        <span class="sec-sub">WEEKLY SCHEDULE</span>
+      </div>
+
+      <!-- Day Selector Pills -->
+      <div class="day-selector" id="day-selector-container">
+        <div class="day-pill" onclick="selectAdminDay('Sunday')">SUN</div>
+        <div class="day-pill" onclick="selectAdminDay('Monday')">MON</div>
+        <div class="day-pill" onclick="selectAdminDay('Tuesday')">TUE</div>
+        <div class="day-pill" onclick="selectAdminDay('Wednesday')">WED</div>
+        <div class="day-pill" onclick="selectAdminDay('Thursday')">THU</div>
+        <div class="day-pill" onclick="selectAdminDay('Friday')">FRI</div>
+        <div class="day-pill" onclick="selectAdminDay('Saturday')">SAT</div>
+      </div>
+
+      <!-- Meal Cards Inputs -->
+      <div class="menu-edit-container">
+        <div class="meal-edit-card">
+          <div class="meal-card-header">
+            <span class="meal-icon">🌅</span>
+            <span class="meal-label">Breakfast</span>
+          </div>
+          <input type="text" id="adm-bf" class="menu-input" placeholder="e.g. Aloo Paratha, Curd">
+        </div>
+
+        <div class="meal-edit-card">
+          <div class="meal-card-header">
+            <span class="meal-icon">☀️</span>
+            <span class="meal-label">Lunch</span>
+          </div>
+          <input type="text" id="adm-lunch" class="menu-input" placeholder="e.g. Veg Biryani, Raita">
+        </div>
+
+        <div class="meal-edit-card">
+          <div class="meal-card-header">
+            <span class="meal-icon">🌙</span>
+            <span class="meal-label">Dinner</span>
+          </div>
+          <input type="text" id="adm-dn" class="menu-input" placeholder="e.g. Phulka, Rajma, Rice">
+        </div>
+
+        <button onclick="saveAdminMenuData()" class="save-menu-btn">
+          <span>Save Menu Changes</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-admin" id="admin-toast" style="display: none;">
+    <span>Admin mode unlocked</span>
+    <span class="toast-close" onclick="document.getElementById('admin-toast').style.display='none'">&times;</span>
+  </div>
+
+  <!-- Thank You Pop-Up -->
+  <div class="modal-overlay" id="thankyou-modal">
+    <div class="admin-card" style="text-align: center;">
+      <h3 style="font-family: 'DM Serif Display', serif; font-size: 24px;">Thank You!</h3>
+      <p style="margin: 10px 0; font-size: 14px; color: var(--muted-text);">Aapka feedback successfully register ho gaya hai.</p>
+      <button onclick="closeModal()" class="submit-btn">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const defaultMenu = {
+      Sunday: { Breakfast: ["Aloo Paratha", "Curd"], Lunch: ["Veg Biryani", "Raita"], Dinner: ["Phulka roti", "Rajma masala", "Steamed rice", "Mixed vegetable", "Kheer"] },
+      Monday: { Breakfast: ["Poha", "Tea"], Lunch: ["Dal Makhani", "Roti", "Rice"], Dinner: ["Aloo Gobi", "Roti", "Dal"] },
+      Tuesday: { Breakfast: ["Idli", "Sambhar"], Lunch: ["Rajma", "Rice", "Roti"], Dinner: ["Mix Veg", "Roti", "Kheer"] },
+      Wednesday: { Breakfast: ["Puri", "Aloo Sabzi"], Lunch: ["Kadi", "Rice", "Roti"], Dinner: ["Paneer", "Roti", "Rice"] },
+      Thursday: { Breakfast: ["Upma", "Tea"], Lunch: ["Chole", "Rice", "Bhature"], Dinner: ["Dal Tadka", "Roti", "Jeera Rice"] },
+      Friday: { Breakfast: ["Bread Butter", "Tea"], Lunch: ["Veg Kolhapuri", "Roti"], Dinner: ["Dal Makhani", "Roti"] },
+      Saturday: { Breakfast: ["Uttapam", "Chutney"], Lunch: ["Aloo Matar", "Roti"], Dinner: ["Chole", "Puri", "Halwa"] }
+    };
+
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let currentActiveMealItems = [];
+    let selectedAdminDay = days[new Date().getDay()];
+    let currentItemRatingTab = 'daily';
+    let currentMealFilter = 'Breakfast';
+
+    function getMenu() {
+      const saved = localStorage.getItem('mess_menu');
+      return saved ? JSON.parse(saved) : defaultMenu;
+    }
+
+    function getReviews() {
+      const saved = localStorage.getItem('mess_reviews');
+      return saved ? JSON.parse(saved) : [];
+    }
+
+    function updateLogic() {
+      const now = new Date();
+      const dayName = days[now.getDay()];
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+
+      const bfStart = 8 * 60, bfEnd = 9 * 60 + 30;
+      const lStart = 12 * 60 + 30, lEnd = 14 * 60;
+      const dStart = 20 * 60, dEnd = 21 * 60 + 30;
+
+      const bannerLabel = document.getElementById('banner-label');
+      const bannerTitle = document.getElementById('banner-title');
+      const offSubtitle = document.getElementById('off-time-subtitle');
+      const upcomingMealTitle = document.getElementById('upcoming-meal-title');
+
+      const offView = document.getElementById('off-time-view');
+      const activeView = document.getElementById('active-time-view');
+
+      let state = "", activeMeal = "", nextMeal = "", nextTimeStr = "";
+
+      if (currentMins < bfStart) {
+        state = "BETWEEN"; nextMeal = "Breakfast"; nextTimeStr = "8:00 AM";
+      } else if (currentMins >= bfStart && currentMins < bfEnd) {
+        state = "ACTIVE"; activeMeal = "Breakfast";
+      } else if (currentMins >= bfEnd && currentMins < lStart) {
+        state = "BETWEEN"; nextMeal = "Lunch"; nextTimeStr = "12:30 PM";
+      } else if (currentMins >= lStart && currentMins < lEnd) {
+        state = "ACTIVE"; activeMeal = "Lunch";
+      } else if (currentMins >= lEnd && currentMins < dStart) {
+        state = "BETWEEN"; nextMeal = "Dinner"; nextTimeStr = "8:00 PM";
+      } else if (currentMins >= dStart && currentMins < dEnd) {
+        state = "ACTIVE"; activeMeal = "Dinner";
+      } else {
+        state = "BETWEEN"; nextMeal = "Breakfast"; nextTimeStr = "8:00 AM";
+      }
+
+      const menuData = getMenu()[dayName];
+
+      if (state === "ACTIVE") {
+        bannerLabel.innerText = "CURRENT SERVICE";
+        bannerTitle.innerText = `${activeMeal} is live`;
+        offView.style.display = "none";
+        activeView.style.display = "block";
+        document.getElementById('active-meal-title').innerText = `${dayName} - ${activeMeal}`;
+        currentActiveMealItems = menuData[activeMeal] || [];
+        renderRatingItems(currentActiveMealItems);
+      } else {
+        bannerLabel.innerText = "NEXT SERVICE";
+        bannerTitle.innerText = `${nextMeal} starts at ${nextTimeStr}`;
+        offSubtitle.innerText = `${nextMeal} begins at ${nextTimeStr}. We'll be ready for you.`;
+        upcomingMealTitle.innerText = nextMeal;
+
+        offView.style.display = "block";
+        activeView.style.display = "none";
+        renderChips(menuData[nextMeal] || []);
+      }
+    }
+
+    function renderChips(items) {
+      document.getElementById('upcoming-chips').innerHTML = items.map(item => `<div class="chip">${item}</div>`).join('');
+    }
+
+    function renderRatingItems(items) {
+      document.getElementById('rating-items-container').innerHTML = items.map((item, idx) => `
+        <div class="item-row">
+          <span class="item-name">${item}</span>
+          <div class="star-rating">
+            ${[5, 4, 3, 2, 1].map(star => `
+              <input type="radio" id="star-${idx}-${star}" name="rate-${idx}" value="${star}" required />
+              <label for="star-${idx}-${star}">★</label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('review-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const ratings = {};
+      currentActiveMealItems.forEach((item, idx) => {
+        const checkedVal = document.querySelector(`input[name="rate-${idx}"]:checked`)?.value;
+        if (checkedVal) ratings[item] = parseInt(checkedVal);
+      });
+
+      const commentText = document.getElementById('user-comment').value.trim();
+
+      const newEntry = {
+        timestamp: new Date().getTime(),
+        meal: document.getElementById('active-meal-title').innerText.split(' - ')[1] || 'Breakfast',
+        ratings: ratings,
+        comment: commentText
+      };
+
+      const reviews = getReviews();
+      reviews.push(newEntry);
+      localStorage.setItem('mess_reviews', JSON.stringify(reviews));
+
+      document.getElementById('thankyou-modal').style.display = "flex";
+      e.target.reset();
+    });
+
+    /* Admin Password Modal Functions */
+    function openAdminAuthModal() {
+      document.getElementById('auth-modal').style.display = "flex";
+      document.getElementById('admin-pin-input').value = "";
+      document.getElementById('auth-error-msg').style.display = "none";
+      document.getElementById('admin-pin-input').focus();
+    }
+
+    function closeAdminAuthModal() {
+      document.getElementById('auth-modal').style.display = "none";
+    }
+
+    function verifyAdminPIN() {
+      const pin = document.getElementById('admin-pin-input').value;
+      if (pin === "admin123" || pin === "1234") {
+        closeAdminAuthModal();
+        document.getElementById('admin-modal').style.display = "flex";
+        document.getElementById('admin-toast').style.display = "flex";
+        populateAdminInsights();
+      } else {
+        document.getElementById('auth-error-msg').style.display = "block";
+      }
+    }
+
+    document.getElementById('admin-pin-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') verifyAdminPIN();
+    });
+
+    function closeAdminModal() { document.getElementById('admin-modal').style.display = "none"; }
+    function closeModal() { document.getElementById('thankyou-modal').style.display = "none"; }
+
+    function switchItemRatingTab(tab) {
+      currentItemRatingTab = tab;
+      document.getElementById('btn-item-daily').classList.toggle('active', tab === 'daily');
+      document.getElementById('btn-item-weekly').classList.toggle('active', tab === 'weekly');
+      document.getElementById('btn-item-monthly').classList.toggle('active', tab === 'monthly');
+      
+      const labels = {
+        daily: 'PAST 24 HOURS',
+        weekly: 'PAST 7 DAYS',
+        monthly: 'PAST 30 DAYS'
+      };
+      document.getElementById('item-rating-subtitle').innerText = labels[tab];
+      renderFilteredItemRatings();
+    }
+
+    function switchMealFilter(meal) {
+      currentMealFilter = meal;
+      document.getElementById('btn-meal-bf').classList.toggle('active', meal === 'Breakfast');
+      document.getElementById('btn-meal-lunch').classList.toggle('active', meal === 'Lunch');
+      document.getElementById('btn-meal-dinner').classList.toggle('active', meal === 'Dinner');
+
+      renderFilteredItemRatings();
+    }
+
+    function renderFilteredItemRatings() {
+      const reviews = getReviews();
+      const now = new Date().getTime();
+      
+      let timeframeMs;
+      if (currentItemRatingTab === 'daily') {
+        timeframeMs = 24 * 60 * 60 * 1000;
+      } else if (currentItemRatingTab === 'weekly') {
+        timeframeMs = 7 * 24 * 60 * 60 * 1000;
+      } else {
+        timeframeMs = 30 * 24 * 60 * 60 * 1000;
+      }
+
+      const mealData = {
+        Breakfast: { sums: {}, counts: {} },
+        Lunch: { sums: {}, counts: {} },
+        Dinner: { sums: {}, counts: {} }
+      };
+
+      let totalRatingsFound = 0;
+
+      reviews.forEach(r => {
+        if ((now - r.timestamp) <= timeframeMs) {
+          const mealType = r.meal || 'Breakfast';
+
+          if (mealType !== currentMealFilter) {
+            return;
+          }
+
+          if (!mealData[mealType]) {
+            mealData[mealType] = { sums: {}, counts: {} };
+          }
+
+          for (const [item, val] of Object.entries(r.ratings || {})) {
+            mealData[mealType].sums[item] = (mealData[mealType].sums[item] || 0) + val;
+            mealData[mealType].counts[item] = (mealData[mealType].counts[item] || 0) + 1;
+            totalRatingsFound++;
+          }
+        }
+      });
+
+      if (totalRatingsFound === 0) {
+        document.getElementById('admin-item-ratings').innerHTML = 
+          `<div style="font-size:12px; color:#888; text-align:center; padding: 10px 0;">No ratings available for ${currentMealFilter} in this ${currentItemRatingTab} period.</div>`;
+        return;
+      }
+
+      const mealIcons = { Breakfast: '🌅', Lunch: '☀️', Dinner: '🌙' };
+      let htmlOutput = "";
+
+      for (const meal in mealData) {
+        if (meal !== currentMealFilter) {
+          continue;
+        }
+
+        const sums = mealData[meal].sums;
+        const counts = mealData[meal].counts;
+        const items = Object.keys(sums);
+
+        if (items.length > 0) {
+          htmlOutput += `
+            <div class="meal-rating-group">
+              <div class="meal-group-title">
+                <span>${mealIcons[meal] || '🍽️'}</span>
+                <span>${meal}</span>
+              </div>
+          `;
+
+          items.forEach(item => {
+            const count = counts[item];
+            const avg = sums[item] / count;
+            htmlOutput += `
+              <div class="item-rating-row">
+                <span>${item}</span>
+                <span class="item-rating-val">★ ${avg.toFixed(1)} <span class="rating-count">(${count})</span></span>
+              </div>
+            `;
+          });
+
+          htmlOutput += `</div>`;
+        }
+      }
+
+      document.getElementById('admin-item-ratings').innerHTML = htmlOutput;
+    }
+
+    function populateAdminInsights() {
+      const reviews = getReviews();
+
+      renderFilteredItemRatings();
+
+      const comments = reviews.filter(r => r.comment);
+      document.getElementById('comments-count-lbl').innerText = comments.length;
+
+      document.getElementById('admin-recent-comments').innerHTML = comments.slice(-5).reverse().map(c => `
+        <div class="comment-row">
+          <span class="comment-tag">${c.meal || 'Breakfast'}</span>
+          <span class="comment-text">"${c.comment}"</span>
+        </div>
+      `).join('') || '<div style="font-size:12px; color:#888;">No comments yet</div>';
+
+      selectAdminDay(days[new Date().getDay()]);
+    }
+
+    function selectAdminDay(dayName) {
+      selectedAdminDay = dayName;
+      const pills = document.querySelectorAll('.day-pill');
+      pills.forEach(p => {
+        p.classList.toggle('active', p.innerText === dayName.substring(0, 3).toUpperCase());
+      });
+      loadAdminMenuData();
+    }
+
+    function loadAdminMenuData() {
+      const data = getMenu()[selectedAdminDay] || { Breakfast: [], Lunch: [], Dinner: [] };
+      document.getElementById('adm-bf').value = (data.Breakfast || []).join(', ');
+      document.getElementById('adm-lunch').value = (data.Lunch || []).join(', ');
+      document.getElementById('adm-dn').value = (data.Dinner || []).join(', ');
+    }
+
+    function saveAdminMenuData() {
+      const menu = getMenu();
+      menu[selectedAdminDay] = {
+        Breakfast: document.getElementById('adm-bf').value.split(',').map(s => s.trim()).filter(Boolean),
+        Lunch: document.getElementById('adm-lunch').value.split(',').map(s => s.trim()).filter(Boolean),
+        Dinner: document.getElementById('adm-dn').value.split(',').map(s => s.trim()).filter(Boolean)
+      };
+      localStorage.setItem('mess_menu', JSON.stringify(menu));
+      alert(`${selectedAdminDay} ka menu save ho gaya!`);
+      updateLogic();
+    }
+
+    updateLogic();
+    setInterval(updateLogic, 30000);
+  </script>
+</body>
+</html>
